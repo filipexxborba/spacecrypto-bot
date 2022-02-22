@@ -6,6 +6,7 @@ from tkinter.tix import IMAGE
 from turtle import Screen
 
 
+
 from cv2 import cv2
 
 from .config import Config
@@ -24,6 +25,11 @@ class SpaceScreenEnum(Enum):
     BASE = 4
     LOSE = 5
     VICTORY = 6
+
+# Vai ser usado para dar o delay
+import time
+# Vai ser usado para o controle de waves
+boss_cleared = 0
 
 
 class SpaceScreen:
@@ -384,7 +390,18 @@ class Ship:
             manager.set_recharge()
 
     def check_victory(manager):
+        global boss_cleared
         current_screen = SpaceScreen.get_current_screen()
         if current_screen == SpaceScreenEnum.VICTORY.value:
             click_when_one_of_targets_appears(["btn_confirm_gt_10s", "btn_confirm_lt_9s"])
             SpaceScreen.wait_for_screen(SpaceScreenEnum.FIGHT.value)
+            boss_cleared = boss_cleared + 1
+            logger(f"🚀 Já eliminei {boss_cleared} boss! 🚀")
+            #Vai validar se o usuário escolheu resetar ou não
+            waves_to_reset = Config.get('waves_to_reset')
+            if(waves_to_reset > 0 && boss_cleared == waves_to_reset):
+                logger("Vou dar surrender por que já matei o total de boss necessário 🐱‍🏍")
+                click_when_target_appears("identify_hunting")
+                time.sleep(3)
+                click_when_target_appears("confirm-surrender-button")
+                boss_cleared = 0
